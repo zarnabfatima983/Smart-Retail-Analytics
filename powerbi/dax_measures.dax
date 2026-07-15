@@ -1,0 +1,140 @@
+
+// ----------------------------------------------------------------
+//  Core KPIs
+// ----------------------------------------------------------------
+
+Total Sales =
+    SUM(Orders[Sales])
+
+Total Profit =
+    SUM(Orders[Profit])
+
+Total Orders =
+    DISTINCTCOUNT(Orders[Order ID])
+
+Total Products =
+    DISTINCTCOUNT(Orders[Product Name])
+
+Total Customers =
+    DISTINCTCOUNT(Orders[Customer ID])
+
+Total Quantity =
+    SUM(Orders[Quantity])
+
+
+// ----------------------------------------------------------------
+//  Ratios and Margins
+// ----------------------------------------------------------------
+
+Profit Margin % =
+    DIVIDE([Total Profit], [Total Sales], 0) * 100
+
+Average Order Value =
+    DIVIDE([Total Sales], [Total Orders], 0)
+
+Average Discount =
+    AVERAGE(Orders[Discount])
+
+Return on Sales =
+    DIVIDE([Total Profit], [Total Sales], 0)
+
+
+// ----------------------------------------------------------------
+//  Time Intelligence
+//  Note: For TOTALYTD and PREVIOUSMONTH to work correctly,
+//  mark Orders[Order Date] as a date column in Model view.
+// ----------------------------------------------------------------
+
+Sales YTD =
+    TOTALYTD([Total Sales], Orders[Order Date])
+
+Profit YTD =
+    TOTALYTD([Total Profit], Orders[Order Date])
+
+Sales Last Month =
+    CALCULATE([Total Sales], PREVIOUSMONTH(Orders[Order Date]))
+
+Sales vs Last Month =
+    [Total Sales] - [Sales Last Month]
+
+Sales MoM Change % =
+    VAR CurrentMonth = CALCULATE([Total Sales], DATESMTD(Orders[Order Date]))
+    VAR PrevMonth    = CALCULATE([Total Sales], PREVIOUSMONTH(Orders[Order Date]))
+    RETURN DIVIDE(CurrentMonth - PrevMonth, PrevMonth, 0) * 100
+
+
+// ----------------------------------------------------------------
+//  Share of Total
+// ----------------------------------------------------------------
+
+Sales % of Total =
+    DIVIDE(
+        [Total Sales],
+        CALCULATE([Total Sales], ALL(Orders)),
+        0
+    ) * 100
+
+Profit % of Total =
+    DIVIDE(
+        [Total Profit],
+        CALCULATE([Total Profit], ALL(Orders)),
+        0
+    ) * 100
+
+
+// ----------------------------------------------------------------
+//  Top Performers
+// ----------------------------------------------------------------
+
+Top Category Sales =
+    CALCULATE(
+        [Total Sales],
+        TOPN(1, VALUES(Orders[Category]), [Total Sales])
+    )
+
+Top Region Sales =
+    CALCULATE(
+        [Total Sales],
+        TOPN(1, VALUES(Orders[Region]), [Total Sales])
+    )
+
+
+// ----------------------------------------------------------------
+//  RFM Segment Counts
+//  Note: These reference the RFM query table, not Orders.
+// ----------------------------------------------------------------
+
+Avg Recency =
+    AVERAGE(RFM[Recency])
+
+Avg Frequency =
+    AVERAGE(RFM[Frequency])
+
+Avg Monetary =
+    AVERAGE(RFM[Monetary])
+
+Champions Count =
+    CALCULATE(COUNTROWS(RFM), RFM[Customer Segment] = "Champions")
+
+Loyal Customers Count =
+    CALCULATE(COUNTROWS(RFM), RFM[Customer Segment] = "Loyal Customers")
+
+At Risk Count =
+    CALCULATE(COUNTROWS(RFM), RFM[Customer Segment] = "At Risk")
+
+Lost Customers Count =
+    CALCULATE(COUNTROWS(RFM), RFM[Customer Segment] = "Lost")
+
+
+// ----------------------------------------------------------------
+//  Formatted Label Measures (for KPI card subtitles)
+// ----------------------------------------------------------------
+
+Profit Margin Label =
+    "Profit Margin: " & FORMAT([Profit Margin %], "0.00") & "%"
+
+Sales Label =
+    "Total Sales: $" & FORMAT([Total Sales], "#,##0")
+
+Profit Label =
+    "Total Profit: $" & FORMAT([Total Profit], "#,##0")
